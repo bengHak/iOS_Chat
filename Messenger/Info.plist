@@ -53,6 +53,10 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Please allow access to toake a profile picture</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>프로필 사진 업로드를 위해 승인해주세요</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
