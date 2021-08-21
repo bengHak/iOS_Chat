@@ -16,6 +16,7 @@ class ProfileViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.backgroundColor = .white
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         tableView.delegate = self
@@ -40,6 +41,27 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        
+        let actionSheet = UIAlertController(title: "Log out?",
+                                            message: "",
+                                            preferredStyle: .actionSheet)
+        
+        actionSheet.addAction(UIAlertAction(title: "Cancle", style: .cancel, handler: nil))
+        actionSheet.addAction(UIAlertAction(title: "Log Out", style: .destructive, handler: { [weak self] _ in
+            
+            do {
+                try FirebaseAuth.Auth.auth().signOut()
+                
+                let vc = LoginViewController()
+                let nav = UINavigationController(rootViewController: vc)
+                nav.modalPresentationStyle = .fullScreen
+                self?.present(nav, animated: false)
+            } catch {
+                print("🔴 Failed to log out")
+            }
+        }))
+        
+        present(actionSheet, animated: true)
     }
     
 }
