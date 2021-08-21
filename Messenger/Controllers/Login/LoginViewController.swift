@@ -7,6 +7,7 @@
 
 import UIKit
 import Firebase
+import FBSDKLoginKit
 
 class LoginViewController: UIViewController {
     
@@ -64,6 +65,12 @@ class LoginViewController: UIViewController {
         button.titleLabel?.font = .systemFont(ofSize: 20, weight: .bold)
         return button
     }()
+    
+    private let facebookLoginButton: FBLoginButton = {
+        let button = FBLoginButton()
+        button.permissions = ["email,public_profile"]
+        return button
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -85,6 +92,7 @@ class LoginViewController: UIViewController {
         scrollView.addSubview(emailField)
         scrollView.addSubview(passwordField)
         scrollView.addSubview(loginButton)
+        scrollView.addSubview(facebookLoginButton)
     }
     
     override func viewDidLayoutSubviews() {
@@ -108,6 +116,10 @@ class LoginViewController: UIViewController {
                                   height: 52)
         loginButton.frame = CGRect(x: 30,
                                   y: passwordField.bottom+10,
+                                  width: scrollView.width-60,
+                                  height: 52)
+        facebookLoginButton.frame = CGRect(x: 30,
+                                  y: loginButton.bottom+10,
                                   width: scrollView.width-60,
                                   height: 52)
     }
@@ -163,4 +175,16 @@ extension LoginViewController: UITextFieldDelegate {
         
         return true
     }
+}
+
+extension LoginViewController: LoginButtonDelegate {
+    func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
+        
+    }
+    
+    func loginButton(_ loginButton: FBLoginButton, didCompleteWith result: LoginManagerLoginResult?, error: Error?) {
+        
+    }
+    
+    
 }
