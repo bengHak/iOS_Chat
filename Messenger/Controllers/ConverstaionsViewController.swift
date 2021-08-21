@@ -9,6 +9,12 @@ import UIKit
 import FirebaseAuth
 
 class ConverstaionsViewController: UIViewController {
+    
+    private let tableView: UITableView = {
+        let table = UITableView()
+//        table.register(UITableViewCell.self))
+        return table
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
