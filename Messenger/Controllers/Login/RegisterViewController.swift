@@ -178,22 +178,33 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        // Firebase register
-        FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { [weak self] authResult, error in
-            guard let result = authResult, error == nil else {
-                print("🔴 Error craeting user")
+        DatabaseManager.shared.userExtists(with: email, completion: { [weak self] exists in
+            guard !exists else {
+                // user already exists
+                self?.alertUserLoginError(message: "Looks like a user account for that email already is exists")
                 return
             }
             
-            let user = result.user
-            print("🟢 Created User: \(user)")
-          
-            self?.navigationController?.dismiss(animated: true, completion: nil)
+            // Firebase register
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { [weak self] authResult, error in
+                guard authResult != nil, error == nil else {
+                    print("🔴 Error craeting user")
+                    return
+                }
+                
+                DatabaseManager.shared.insertUser(with: ChatAppUser(firstName: firstName,
+                                                                    lastName: lastName,
+                                                                    emailAddress: email))
+              
+                self?.navigationController?.dismiss(animated: true, completion: nil)
+            })
         })
     }
     
-    func alertUserLoginError() {
-        let alert = UIAlertController(title: "Woops", message: "Please enter all information to create a new account.", preferredStyle: .alert)
+    func alertUserLoginError(message: String = "Please enter all information to create a new account.") {
+        let alert = UIAlertController(title: "Woops",
+                                      message: message,
+                                      preferredStyle: .alert)
         
         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         present(alert, animated: true)
