@@ -22,6 +22,7 @@
 		EA13CB3E26D04C2500C62C15 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA13CB3D26D04C2500C62C15 /* ProfileViewController.swift */; };
 		EA13CB4126D04F5F00C62C15 /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA13CB4026D04F5F00C62C15 /* Extensions.swift */; };
 		EA13CB4526D05D4D00C62C15 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = EA13CB4426D05D4D00C62C15 /* GoogleService-Info.plist */; };
+		EAAFED9426D130020076E950 /* ChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAAFED9326D130020076E950 /* ChatViewController.swift */; };
 		EAC30EDB26D0C97600501BFE /* DatabaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = EAC30EDA26D0C97600501BFE /* DatabaseManager.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		EA13CB3D26D04C2500C62C15 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		EA13CB4026D04F5F00C62C15 /* Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		EA13CB4426D05D4D00C62C15 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		EAAFED9326D130020076E950 /* ChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatViewController.swift; sourceTree = "<group>"; };
 		EAC30EDA26D0C97600501BFE /* DatabaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -110,6 +112,7 @@
 				EA13CB3926D04BF500C62C15 /* VideoViewerViewController.swift */,
 				EA13CB3B26D04C1700C62C15 /* NewConversationViewController.swift */,
 				EA13CB3D26D04C2500C62C15 /* ProfileViewController.swift */,
+				EAAFED9326D130020076E950 /* ChatViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -317,6 +320,7 @@
 				EA13CB1A26D0499200C62C15 /* AppDelegate.swift in Sources */,
 				EA13CB3E26D04C2500C62C15 /* ProfileViewController.swift in Sources */,
 				EA13CB1C26D0499200C62C15 /* SceneDelegate.swift in Sources */,
+				EAAFED9426D130020076E950 /* ChatViewController.swift in Sources */,
 				EA13CB3826D04BEA00C62C15 /* PhotoViewerViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
