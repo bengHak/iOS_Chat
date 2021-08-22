@@ -100,12 +100,13 @@ class RegisterViewController: UIViewController {
         return button
     }()
     
+    // MARK: LifeCycles
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Register"
         view.backgroundColor = .white
         
-        registerButton.addTarget(self, action: #selector(loginBUttonTapped), for: .touchUpInside)
+        registerButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         
         emailField.delegate = self
         passwordField.delegate = self
@@ -164,7 +165,8 @@ class RegisterViewController: UIViewController {
                                    height: 52)
     }
     
-    @objc private func loginBUttonTapped() {
+    // MARK: Actions
+    @objc private func loginButtonTapped() {
         
         firstNameField.resignFirstResponder()
         lastNameField.resignFirstResponder()
@@ -227,6 +229,13 @@ class RegisterViewController: UIViewController {
         })
     }
     
+    @objc private func didTapRegister() {
+        let vc = RegisterViewController()
+        vc.title = "Create Account"
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    // MARK: Method
     func alertUserLoginError(message: String = "Please enter all information to create a new account.") {
         let alert = UIAlertController(title: "Woops",
                                       message: message,
@@ -235,14 +244,9 @@ class RegisterViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
         present(alert, animated: true)
     }
-    
-    @objc private func didTapRegister() {
-        let vc = RegisterViewController()
-        vc.title = "Create Account"
-        navigationController?.pushViewController(vc, animated: true)
-    }
 }
 
+// MARK: UITextFieldDelegate
 extension RegisterViewController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -250,13 +254,14 @@ extension RegisterViewController: UITextFieldDelegate {
         if textField == emailField {
             passwordField.becomeFirstResponder()
         } else if textField == passwordField {
-            loginBUttonTapped()
+            loginButtonTapped()
         }
         
         return true
     }
 }
 
+// MARK: UIImagePickerControllerDelegate, UINavigationControllerDelgate
 extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     func presentPhotoActionSheet() {

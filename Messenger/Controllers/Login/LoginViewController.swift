@@ -13,6 +13,7 @@ import JGProgressHUD
 
 class LoginViewController: UIViewController {
     
+    // MARK: UI Properties
     private let spinner = JGProgressHUD()
     
     private let scrollView: UIScrollView = {
@@ -80,6 +81,7 @@ class LoginViewController: UIViewController {
     
     private var loginObserver: NSObjectProtocol?
 
+    // MARK: Lifecycles
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -96,7 +98,7 @@ class LoginViewController: UIViewController {
                                                             style: .done,
                                                             target: self,
                                                             action: #selector(didTapRegister))
-        loginButton.addTarget(self, action: #selector(loginBUttonTapped), for: .touchUpInside)
+        loginButton.addTarget(self, action: #selector(loginButtonTapped), for: .touchUpInside)
         
         facebookLoginButton.delegate = self
         emailField.delegate = self
@@ -118,6 +120,7 @@ class LoginViewController: UIViewController {
         }
     }
     
+    // MARK: UI Setup
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
@@ -151,13 +154,13 @@ class LoginViewController: UIViewController {
                                           height: 52)
     }
     
-    @objc private func loginBUttonTapped() {
+    // MARK: Email Login
+    @objc private func loginButtonTapped() {
         
         emailField.resignFirstResponder()
         passwordField.resignFirstResponder()
         
-        guard let email = emailField.text,
-              let password = passwordField.text,
+        guard let email = emailField.text, let password = passwordField.text,
               !email.isEmpty, !password.isEmpty, password.count >= 6 else {
             alertUserLoginError()
             return
@@ -167,7 +170,6 @@ class LoginViewController: UIViewController {
         
         // Firebase log in
         FirebaseAuth.Auth.auth().signIn(withEmail: email, password: password, completion: { [weak self] authResult, error in
-            
             DispatchQueue.main.async {
                 self?.spinner.dismiss()
             }
@@ -178,16 +180,11 @@ class LoginViewController: UIViewController {
             }
             
             let user = result.user
+            
+            UserDefaults.standard.set(email, forKey: "email")
             print("🟢Logged In User: \(user)")
             self?.navigationController?.dismiss(animated: true, completion: nil)
         })
-    }
-    
-    func alertUserLoginError() {
-        let alert = UIAlertController(title: "Woops", message: "Please enter all information to log in.", preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
-        present(alert, animated: true)
     }
 
     @objc private func didTapRegister() {
@@ -195,8 +192,17 @@ class LoginViewController: UIViewController {
         vc.title = "Create Account"
         navigationController?.pushViewController(vc, animated: true)
     }
+    
+    // MARK: Method
+    func alertUserLoginError() {
+        let alert = UIAlertController(title: "Woops", message: "Please enter all information to log in.", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Dismiss", style: .cancel, handler: nil))
+        present(alert, animated: true)
+    }
 }
 
+// MARK: UITextFieldDelegate
 extension LoginViewController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -204,13 +210,14 @@ extension LoginViewController: UITextFieldDelegate {
         if textField == emailField {
             passwordField.becomeFirstResponder()
         } else if textField == passwordField {
-            loginBUttonTapped()
+            loginButtonTapped()
         }
         
         return true
     }
 }
 
+// MARK: Facebook LoginButtonDelegate
 extension LoginViewController: LoginButtonDelegate {
     func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
         // no operation
@@ -242,6 +249,8 @@ extension LoginViewController: LoginButtonDelegate {
                 print("🔴 Failed to get email and name from fb result")
                 return
             }
+            
+            UserDefaults.standard.set(email, forKey: "email")
             
             DatabaseManager.shared.userExtists(with: email, completion: { exists in
                 if !exists {
