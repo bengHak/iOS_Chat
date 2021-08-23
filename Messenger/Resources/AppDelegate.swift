@@ -58,6 +58,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, GIDSignInDelegate {
               let lastName = user.profile.familyName else { return }
         
         UserDefaults.standard.set(email, forKey: "email")
+        UserDefaults.standard.set("\(firstName) \(lastName)", forKey: "name")
         
         print("🟢 Did sign in with Google: \(String(describing: user))")
         
