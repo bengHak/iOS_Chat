@@ -110,21 +110,15 @@ class ChatViewController: MessagesViewController {
         DatabaseManager.shared.getAllMessageForConversation(with: id) { [weak self] result in
             switch result {
             case .success(let messages):
-                guard !messages.isEmpty else {
-                    return
-                }
-                
+                guard !messages.isEmpty else { return }
                 self?.messages = messages
-                
                 DispatchQueue.main.async {
                     self?.messagesCollectionView.reloadDataAndKeepOffset()
                     if shouldScrollToBottom {
                         self?.messagesCollectionView.scrollToLastItem()
                     }
                 }
-                
-            case .failure(let error):
-                print("🔴 Failed to get messages: \(error)")
+            case .failure(let error): print("🔴 Failed to get messages: \(error)")
             }
         }
     }
@@ -150,16 +144,19 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
         // Send message
         if isNewConversation {
             // Create conversation in database
-            DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "User", firstMessage: message) { success in
+            DatabaseManager.shared.createNewConversation(with: otherUserEmail, name: self.title ?? "User", firstMessage: message) { [weak self] success in
                 if success {
                     print("🟢 Successfully send message: \(message)")
-                } else {
-                    print("🔴 Failed to send")
-                }
+                    self?.isNewConversation = false
+                } else { print("🔴 Failed to send") }
             }
         } else {
             // append to existing conversation data
-            
+            guard let conversationId = self.conversationId, let name = self.title else { return }
+            DatabaseManager.shared.sendMessage(to: conversationId, recipientEmail: otherUserEmail, name: name, newMessage: message) { success in
+                if success { print("🟢 Successfully send message: \(message)") }
+                else { print("🔴 Failed to send") }
+            }
         }
     }
     

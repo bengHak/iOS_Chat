@@ -37,7 +37,7 @@ class NewConversationViewController: UIViewController {
         let label = UILabel()
         label.text = "No Results"
         label.textAlignment = .center
-        label.textColor = .green
+        label.textColor = .lightGray
         label.font = .systemFont(ofSize: 21, weight: .medium)
         return label
     }()
@@ -83,7 +83,7 @@ extension NewConversationViewController: UITableViewDelegate, UITableViewDataSou
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = results[indexPath.row]["name"]
+        cell.textLabel?.text = "\(results[indexPath.row]["name"]!) - \(results[indexPath.row]["email"]!)"
         return cell
     }
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

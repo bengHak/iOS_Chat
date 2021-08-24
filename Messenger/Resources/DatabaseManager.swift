@@ -113,12 +113,13 @@ extension DatabaseManager {
     }
 }
 
-// MARK: - Sending messages / conversations
+// MARK: - Sending messages / Create conversations
 extension DatabaseManager {
     
     /// Creates a new converstaion with target user email and first message sent
     public func createNewConversation(with otherUserEmail: String, name: String, firstMessage: Message, completion: @escaping (Bool) -> Void) {
-        guard  let currentEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+        guard  let currentEmail = UserDefaults.standard.value(forKey: "email") as? String,
+               let currentName = UserDefaults.standard.value(forKey: "name") as? String else {
             return
         }
         let safeEmail = DatabaseManager.safeEmail(emailAddress: currentEmail)
@@ -175,7 +176,7 @@ extension DatabaseManager {
             let recipient_newConversationData: [String:Any] = [
                 "id": conversationId,
                 "other_user_email": safeEmail,
-                "name": "Self",
+                "name": currentName,
                 "latest_message": [
                     "date": dateString,
                     "message": message,
@@ -238,9 +239,7 @@ extension DatabaseManager {
             return
         }
         let safeEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
-        
         var message = ""
-        
         switch firstMessage.kind {
         case .text(let messageText):
             message = messageText
@@ -270,6 +269,99 @@ extension DatabaseManager {
             }
             completion(true)
         }
+    }
+    
+    /// Sends a message with target conversation and message
+    public func sendMessage(to conversation: String, recipientEmail: String, name: String, newMessage: Message, completion: @escaping (Bool) -> Void) {
+        // conversations에 메시지 추가
+        let messageDate = newMessage.sentDate
+        let dateString = ChatViewController.dateFormatter.string(from: messageDate)
+        guard let currentUserEmail = UserDefaults.standard.value(forKey: "email") as? String else {
+            completion(false)
+            return
+        }
+        let safeEmail = DatabaseManager.safeEmail(emailAddress: currentUserEmail)
+        var message = ""
+        switch newMessage.kind {
+        case .text(let messageText):
+            message = messageText
+        default:
+            break
+        }
+        
+        let newMessageEntry: [String: Any] = [
+            "id": newMessage.messageId,
+            "type": newMessage.kind.messageKindString,
+            "content": message,
+            "date": dateString,
+            "sender_email": safeEmail,
+            "is_read": false,
+            "name": name
+        ]
+        
+        self.database.child("\(conversation)/messages").observeSingleEvent(of: .value) { [weak self] snapshot in
+            guard var currentMessages = snapshot.value as? [[String:Any]] else {
+                completion(false)
+                return
+            }
+            
+            currentMessages.append(newMessageEntry)
+            self?.database.child("\(conversation)/messages").setValue(currentMessages) { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+                completion(true)
+            }
+        }
+        
+        // sender에 latest 메시지 추가
+        self.database.child("\(safeEmail)/conversations").observeSingleEvent(of: .value) { [weak self] snapshot in
+            guard let value = snapshot.value as? [[String:Any]] else { return }
+            let conversationIndex = value.indices.filter {
+                guard let conversationId = value[$0]["id"] as? String,
+                      conversationId == conversation else { return false }
+                return true
+            }.first
+            
+            guard let index = conversationIndex,
+                  var modifiedLatestMessage = value[index]["latest_message"] as? [String:Any] else {
+                return
+            }
+           
+            modifiedLatestMessage = [
+                "message": message,
+                "date": ChatViewController.dateFormatter.string(from: newMessage.sentDate),
+                "is_read": true
+            ]
+            
+            self?.database.child("\(safeEmail)/conversations/\(index)/latest_message").setValue(modifiedLatestMessage)
+        }
+        
+        // recipient에 latest 메시지 추가
+        self.database.child("\(recipientEmail)/conversations").observeSingleEvent(of: .value) { [weak self] snapshot in
+            guard let value = snapshot.value as? [[String:Any]] else { return }
+            let conversationIndex = value.indices.filter {
+                guard let conversationId = value[$0]["id"] as? String,
+                      conversationId == conversation else { return false }
+                return true
+            }.first
+            
+            guard let index = conversationIndex,
+                  var modifiedLatestMessage = value[index]["latest_message"] as? [String:Any] else {
+                return
+            }
+        
+            modifiedLatestMessage = [
+                "message": message,
+                "date": ChatViewController.dateFormatter.string(from: newMessage.sentDate),
+                "is_read": false
+            ]
+            print(modifiedLatestMessage)
+            
+            self?.database.child("\(recipientEmail)/conversations/\(index)/latest_message").setValue(modifiedLatestMessage)
+        }
+        print("🟢 send: \(safeEmail) 👉 \(recipientEmail)")
     }
     
     /// Fetches and returns all conversation for the user with passed in email
@@ -338,11 +430,6 @@ extension DatabaseManager {
             
             completion(.success(messages))
         }
-    }
-    
-    /// Sends a message with target conversation and message
-    public func sendMessage(to conversation: String, message: Message, completion: @escaping (Bool) -> Void) {
-        
     }
 }
 
