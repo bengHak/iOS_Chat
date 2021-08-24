@@ -296,6 +296,10 @@ extension DatabaseManager {
             if let targetUrlString = mediaItem.url?.absoluteString {
                 message = targetUrlString
             }
+        case .video(let mediaItem):
+            if let targetUrlString = mediaItem.url?.absoluteString {
+                message = targetUrlString
+            }
         default:
             break
         }
@@ -404,7 +408,6 @@ extension DatabaseManager {
                 return
             }
             
-            print(value)
             let conversations: [Conversation] = value.compactMap({ dictionary in
                 guard let conversationId = dictionary["id"] as? String,
                       let name = dictionary["name"] as? String,
@@ -437,7 +440,6 @@ extension DatabaseManager {
             }
             
             let messages: [Message] = value.compactMap({ dictionary in
-                print(dictionary)
                 guard let name = dictionary["name"] as? String,
                       let isRead = dictionary["is_read"] as? Bool,
                       let messageID = dictionary["id"] as? String,
@@ -462,6 +464,16 @@ extension DatabaseManager {
                                       placeholderImage: placeholder,
                                       size: CGSize(width: 300, height: 300))
                     kind = .photo(media)
+                } else if type == "video" {
+                    guard let videoUrl = URL(string: content),
+                          let placeholder = UIImage(named: "video_placeholder") else {
+                        return nil
+                    }
+                    let media = Media(url: videoUrl,
+                                      image: nil,
+                                      placeholderImage: placeholder,
+                                      size: CGSize(width: 300, height: 300))
+                    kind = .video(media)
                 } else {
                     kind = .text(content)
                 }
