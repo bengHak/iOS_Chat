@@ -81,14 +81,13 @@ class LoginViewController: UIViewController {
     
     private var loginObserver: NSObjectProtocol?
 
-    // MARK: Lifecycles
+    // MARK: - Lifecycles
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        loginObserver = NotificationCenter.default.addObserver(forName: .didLoginNotification, object: nil, queue: .main,
-                                                               using: { [weak self] _ in
-                                                                self?.navigationController?.dismiss(animated: true, completion: nil)
-                                                               })
+        loginObserver = NotificationCenter.default.addObserver(forName: .didLoginNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.navigationController?.dismiss(animated: true, completion: nil)
+        }
         GIDSignIn.sharedInstance()?.presentingViewController = self
         
         title = "Log In"
@@ -120,7 +119,7 @@ class LoginViewController: UIViewController {
         }
     }
     
-    // MARK: UI Setup
+    // MARK: - UI Setup
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         scrollView.frame = view.bounds
@@ -153,7 +152,7 @@ class LoginViewController: UIViewController {
                                          height: 52)
     }
     
-    // MARK: Email Login
+    // MARK: - Email Login
     @objc private func loginButtonTapped() {
         
         emailField.resignFirstResponder()
@@ -205,7 +204,7 @@ class LoginViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
     }
     
-    // MARK: Method
+    // MARK: - Method
     func alertUserLoginError() {
         let alert = UIAlertController(title: "Woops", message: "Please enter all information to log in.", preferredStyle: .alert)
         
@@ -214,7 +213,7 @@ class LoginViewController: UIViewController {
     }
 }
 
-// MARK: UITextFieldDelegate
+// MARK: - UITextFieldDelegate
 extension LoginViewController: UITextFieldDelegate {
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -229,7 +228,7 @@ extension LoginViewController: UITextFieldDelegate {
     }
 }
 
-// MARK: Facebook LoginButtonDelegate
+// MARK: - Facebook LoginButtonDelegate
 extension LoginViewController: LoginButtonDelegate {
     func loginButtonDidLogOut(_ loginButton: FBLoginButton) {
         // no operation

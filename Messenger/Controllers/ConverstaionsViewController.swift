@@ -45,6 +45,8 @@ class ConverstaionsViewController: UIViewController {
         return label
     }()
     
+    private var loginObserver: NSObjectProtocol?
+    
 // MARK: - Lifecycles
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -57,6 +59,10 @@ class ConverstaionsViewController: UIViewController {
         
         setupTableView()
         startListeningForConversations()
+        
+        loginObserver = NotificationCenter.default.addObserver(forName: .didLoginNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.startListeningForConversations()
+        }
     }
     
     override func viewDidLayoutSubviews() {
@@ -106,14 +112,15 @@ class ConverstaionsViewController: UIViewController {
         }
     }
     
-//    private func fetchConversations() {
-//        tableView.isHidden = false
-//    }
-    
     private func startListeningForConversations() {
         guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
             return
         }
+        
+        if let observer = loginObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
+        
         print("🟢 Starting converstaion fetch...")
         
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
@@ -121,20 +128,17 @@ class ConverstaionsViewController: UIViewController {
             switch result {
             case .success(let conversations):
                 print("🟢 Successfully got conversation model")
-                print(conversations)
                 guard !conversations.isEmpty else {
                     self?.tableView.isHidden = true
                     self?.noConverstaionLabel.isHidden = false
                     return
                 }
-                self?.conversations = conversations
-                
                 DispatchQueue.main.async {
+                    self?.conversations = conversations
                     self?.tableView.isHidden = false
                     self?.noConverstaionLabel.isHidden = true
                     self?.tableView.reloadData()
                 }
-                
             case .failure(let error):
                 print("🔴 Failed to get conversations: \(error)")
             }
@@ -167,5 +171,24 @@ extension ConverstaionsViewController: UITableViewDelegate, UITableViewDataSourc
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         120
+    }
+    
+    func tableView(_ tableView: UITableView, editingStyleForRowAt indexPath: IndexPath) -> UITableViewCell.EditingStyle {
+        return .delete
+    }
+    
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
+            tableView.beginUpdates()
+            DatabaseManager.shared.deleteConverstaion(conversationId: conversations[indexPath.row].id) { [weak self] success in
+                if success {
+                    print("🟢 Success to delete conversation")
+                    self?.conversations.remove(at: indexPath.row)
+                    tableView.deleteRows(at: [indexPath], with: .left)
+                }
+                else {print("🔴 Failed to delete conversation")}
+            }
+            tableView.endUpdates()
+        }
     }
 }
