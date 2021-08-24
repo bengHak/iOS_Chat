@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseDatabase
+import MessageKit
 
 final class DatabaseManager {
 
@@ -142,8 +143,10 @@ extension DatabaseManager {
                 message = messageText
             case .attributedText(_):
                 break
-            case .photo(_):
-                break
+            case .photo(let mediaItem):
+                if let targetUrlString = mediaItem.url?.absoluteString {
+                    message = targetUrlString
+                }
             case .video(_):
                 break
             case .location(_):
@@ -243,6 +246,10 @@ extension DatabaseManager {
         switch firstMessage.kind {
         case .text(let messageText):
             message = messageText
+        case .photo(let mediaItem):
+            if let targetUrlString = mediaItem.url?.absoluteString {
+                message = targetUrlString
+            }
         default:
             break
         }
@@ -285,6 +292,10 @@ extension DatabaseManager {
         switch newMessage.kind {
         case .text(let messageText):
             message = messageText
+        case .photo(let mediaItem):
+            if let targetUrlString = mediaItem.url?.absoluteString {
+                message = targetUrlString
+            }
         default:
             break
         }
@@ -317,7 +328,11 @@ extension DatabaseManager {
         
         // sender에 latest 메시지 추가
         self.database.child("\(safeEmail)/conversations").observeSingleEvent(of: .value) { [weak self] snapshot in
-            guard let value = snapshot.value as? [[String:Any]] else { return }
+            guard let value = snapshot.value as? [[String:Any]] else {
+                completion(false)
+                return
+            }
+            
             let conversationIndex = value.indices.filter {
                 guard let conversationId = value[$0]["id"] as? String,
                       conversationId == conversation else { return false }
@@ -326,6 +341,7 @@ extension DatabaseManager {
             
             guard let index = conversationIndex,
                   var modifiedLatestMessage = value[index]["latest_message"] as? [String:Any] else {
+                completion(false)
                 return
             }
            
@@ -335,12 +351,21 @@ extension DatabaseManager {
                 "is_read": true
             ]
             
-            self?.database.child("\(safeEmail)/conversations/\(index)/latest_message").setValue(modifiedLatestMessage)
+            self?.database.child("\(safeEmail)/conversations/\(index)/latest_message").setValue(modifiedLatestMessage) { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+            }
         }
         
         // recipient에 latest 메시지 추가
         self.database.child("\(recipientEmail)/conversations").observeSingleEvent(of: .value) { [weak self] snapshot in
-            guard let value = snapshot.value as? [[String:Any]] else { return }
+            guard let value = snapshot.value as? [[String:Any]] else {
+                completion(false)
+                return
+            }
+            
             let conversationIndex = value.indices.filter {
                 guard let conversationId = value[$0]["id"] as? String,
                       conversationId == conversation else { return false }
@@ -349,6 +374,7 @@ extension DatabaseManager {
             
             guard let index = conversationIndex,
                   var modifiedLatestMessage = value[index]["latest_message"] as? [String:Any] else {
+                completion(false)
                 return
             }
         
@@ -359,9 +385,15 @@ extension DatabaseManager {
             ]
             print(modifiedLatestMessage)
             
-            self?.database.child("\(recipientEmail)/conversations/\(index)/latest_message").setValue(modifiedLatestMessage)
+            self?.database.child("\(recipientEmail)/conversations/\(index)/latest_message").setValue(modifiedLatestMessage) { error, _ in
+                guard error == nil else {
+                    completion(false)
+                    return
+                }
+            }
         }
         print("🟢 send: \(safeEmail) 👉 \(recipientEmail)")
+        completion(true)
     }
     
     /// Fetches and returns all conversation for the user with passed in email
@@ -407,16 +439,34 @@ extension DatabaseManager {
             let messages: [Message] = value.compactMap({ dictionary in
                 print(dictionary)
                 guard let name = dictionary["name"] as? String,
-//                      let isRead = dictionary["is_read"] as? Bool,
+                      let isRead = dictionary["is_read"] as? Bool,
                       let messageID = dictionary["id"] as? String,
                       let content = dictionary["content"] as? String,
                       let senderEmail = dictionary["sender_email"] as? String,
-//                      let type = dictionary["type"] as? String,
+                      let type = dictionary["type"] as? String,
                       let dateString = dictionary["date"] as? String,
                       let date = ChatViewController.dateFormatter.date(from: dateString) else {
                     print("🔴 MSG nil")
                     return nil
                 }
+                
+                var kind: MessageKind?
+                
+                if type == "photo" {
+                    guard  let imageUrl = URL(string: content),
+                           let placeholder = UIImage(systemName: "plus") else {
+                        return nil
+                    }
+                    let media = Media(url: imageUrl,
+                                      image: nil,
+                                      placeholderImage: placeholder,
+                                      size: CGSize(width: 300, height: 300))
+                    kind = .photo(media)
+                } else {
+                    kind = .text(content)
+                }
+                
+                guard let finalKind = kind else { return nil }
                 
                 let sender = Sender(photoURL: "",
                                     senderId: senderEmail,
@@ -425,7 +475,7 @@ extension DatabaseManager {
                 return Message(sender: sender,
                                messageId: messageID,
                                sentDate: date,
-                               kind: .text(content))
+                               kind: finalKind)
             })
             
             completion(.success(messages))
