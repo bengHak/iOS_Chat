@@ -141,12 +141,12 @@ class ChatViewController: MessagesViewController {
         actionSheet.addAction(UIAlertAction(title: "Video", style: .default, handler: { [weak self] _ in
             self?.presentVideoInputActionSheet()
         }))
-        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
-            
-        }))
-        actionSheet.addAction(UIAlertAction(title: "Cancle", style: .default, handler: { [weak self] _ in
-            actionSheet.dismiss(animated: true, completion: nil)
-        }))
+//        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
+//            
+//        }))
+//        actionSheet.addAction(UIAlertAction(title: "Cancle", style: .default, handler: { [weak self] _ in
+//            actionSheet.dismiss(animated: true, completion: nil)
+//        }))
         
         present(actionSheet, animated: true)
     }
