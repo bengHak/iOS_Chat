@@ -330,6 +330,10 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                 if success {
                     print("🟢 Successfully send message: \(message)")
                     self?.isNewConversation = false
+                    let newConversationId = "conversation_\(message.messageId)"
+                    self?.conversationId = newConversationId
+                    self?.listeningForMessages(id: newConversationId, shouldScrollToBottom: true)
+                    inputBar.inputTextView.text = nil 
                 } else { print("🔴 Failed to send") }
             }
         } else {
@@ -341,7 +345,6 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
             }
         }
         
-        inputBar.inputTextView.text = ""
     }
     
     private func createMessageId() -> String? {

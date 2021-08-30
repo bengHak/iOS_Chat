@@ -23,7 +23,7 @@ class ConverstaionsViewController: UIViewController {
         return table
     }()
     
-    private let noConverstaionLabel: UILabel = {
+    private let noConversationLabel: UILabel = {
         let label = UILabel()
         label.text = "No Converstaions!"
         label.textAlignment = .center
@@ -42,7 +42,7 @@ class ConverstaionsViewController: UIViewController {
                                                             action: #selector(didTapComposeButton))
         view.backgroundColor = .systemBackground
         view.addSubview(tableView)
-        view.addSubview(noConverstaionLabel)
+        view.addSubview(noConversationLabel)
         
         setupTableView()
         startListeningForConversations()
@@ -55,6 +55,10 @@ class ConverstaionsViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         tableView.frame = view.bounds
+        noConversationLabel.frame = CGRect(x: 10,
+                                           y: (view.height-100)/2,
+                                           width: view.width-20,
+                                           height: 100)
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -140,16 +144,19 @@ class ConverstaionsViewController: UIViewController {
                 print("🟢 Successfully got conversation model")
                 guard !conversations.isEmpty else {
                     self?.tableView.isHidden = true
-                    self?.noConverstaionLabel.isHidden = false
+                    self?.noConversationLabel.isHidden = false
                     return
                 }
+                self?.conversations = conversations
+                self?.tableView.isHidden = false
+                self?.noConversationLabel.isHidden = true
+                
                 DispatchQueue.main.async {
-                    self?.conversations = conversations
-                    self?.tableView.isHidden = false
-                    self?.noConverstaionLabel.isHidden = true
                     self?.tableView.reloadData()
                 }
             case .failure(let error):
+                self?.tableView.isHidden = true
+                self?.noConversationLabel.isHidden = false
                 print("🔴 Failed to get conversations: \(error)")
             }
         }
