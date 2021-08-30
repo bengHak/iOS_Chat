@@ -13,59 +13,10 @@ import AVFoundation
 import AVKit
 import CoreLocation
 
-struct Message: MessageType {
-    var sender: SenderType
-    var messageId: String
-    var sentDate: Date
-    var kind: MessageKind
-}
-
-extension MessageKind {
-    var messageKindString: String {
-        switch self {
-        case .text(_):
-            return "text"
-        case .attributedText(_):
-            return "attributedText"
-        case .photo(_):
-            return "photo"
-        case .video(_):
-            return "video"
-        case .location(_):
-            return "location"
-        case .emoji(_):
-            return "emoji"
-        case .audio(_):
-            return "audio"
-        case .contact(_):
-            return "contact"
-        case .linkPreview(_):
-            return "linkPreview"
-        case .custom(_):
-            return "custom"
-        }
-    }
-}
-
-struct Sender: SenderType {
-    var photoURL: String
-    var senderId: String
-    var displayName: String
-}
-
-struct Media: MediaItem {
-    var url: URL?
-    var image: UIImage?
-    var placeholderImage: UIImage
-    var size: CGSize
-}
-
-struct Location: LocationItem {
-    var location: CLLocation
-    var size: CGSize
-}
-
 class ChatViewController: MessagesViewController {
+    
+    private var senderPhotoUrl: URL?
+    private var otherUserPhotoUrl: URL?
     
     public static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -436,6 +387,64 @@ extension ChatViewController: MessagesDataSource, MessagesLayoutDelegate, Messag
             imageView.sd_setImage(with: imageUrl, completed: nil)
         default:
             break
+        }
+    }
+    
+    func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
+        let sender = message.sender
+        if sender.senderId == selfSender?.senderId {
+            return .link
+        }
+        return .secondarySystemBackground
+    }
+    
+    func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
+        
+        let sender = message.sender
+        
+        if sender.senderId == selfSender?.senderId {
+            if let currentUserImage = self.senderPhotoUrl {
+                avatarView.sd_setImage(with: currentUserImage, completed: nil)
+            } else {
+                guard let email = UserDefaults.standard.value(forKey: "email") as? String else {
+                    return
+                }
+                let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
+                let path = "images/\(safeEmail)_profile_picture.jpeg"
+                
+                // fetch url
+                StorageManager.shared.downloadURL(for: path) { [weak self] result in
+                    switch result {
+                    case .success(let url):
+                        self?.senderPhotoUrl = url
+                        DispatchQueue.main.async {
+                            avatarView.sd_setImage(with: url, completed: nil)
+                        }
+                    case .failure(let error):
+                        print("\(error)")
+                    }
+                }
+            }
+        } else {
+            // other user image
+            if let otherUserPhotoUrl = self.otherUserPhotoUrl {
+                avatarView.sd_setImage(with: otherUserPhotoUrl, completed: nil)
+            } else {
+                let path = "images/\(otherUserEmail)_profile_picture.jpeg"
+                
+                // fetch url
+                StorageManager.shared.downloadURL(for: path) { [weak self] result in
+                    switch result {
+                    case .success(let url):
+                        self?.otherUserPhotoUrl = url
+                        DispatchQueue.main.async {
+                            avatarView.sd_setImage(with: url, completed: nil)
+                        }
+                    case .failure(let error):
+                        print("\(error)")
+                    }
+                }
+            }
         }
     }
 }
