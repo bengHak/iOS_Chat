@@ -46,8 +46,8 @@ class ChatViewController: MessagesViewController {
     
 // MARK: - Init
     init(with email: String, id: String?) {
-        self.conversationId = id
-        self.otherUserEmail = email
+        conversationId = id
+        otherUserEmail = email
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -104,9 +104,9 @@ class ChatViewController: MessagesViewController {
 //        actionSheet.addAction(UIAlertAction(title: "Audio", style: .default, handler: { [weak self] _ in
 //
 //        }))
-//        actionSheet.addAction(UIAlertAction(title: "Cancle", style: .default, handler: { [weak self] _ in
-//            actionSheet.dismiss(animated: true, completion: nil)
-//        }))
+        actionSheet.addAction(UIAlertAction(title: "Cancle", style: .cancel, handler: { _ in
+            actionSheet.dismiss(animated: true, completion: nil)
+        }))
         
         present(actionSheet, animated: true)
     }
@@ -333,7 +333,7 @@ extension ChatViewController: InputBarAccessoryViewDelegate {
                     let newConversationId = "conversation_\(message.messageId)"
                     self?.conversationId = newConversationId
                     self?.listeningForMessages(id: newConversationId, shouldScrollToBottom: true)
-                    inputBar.inputTextView.text = nil 
+                    inputBar.inputTextView.text = nil
                 } else { print("🔴 Failed to send") }
             }
         } else {

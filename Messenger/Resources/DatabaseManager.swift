@@ -12,8 +12,8 @@ import CoreLocation
 
 final class DatabaseManager {
 
-    // Singleton
-    static let shared = DatabaseManager()
+    // Shared instance of class
+    public static let shared = DatabaseManager()
     
     // private let database = Database.database().reference()
     // region이 달라서 직접 설정해줘야한다
@@ -28,6 +28,7 @@ final class DatabaseManager {
 
 extension DatabaseManager {
     
+    /// Returns dictionary node at child path
     public func getDataFor(path: String, completion: @escaping (Result<Any, Error>) -> Void) {
         self.database.child("\(path)").observeSingleEvent(of: .value) { snapshot in
             guard let value = snapshot.value else {
@@ -44,6 +45,10 @@ extension DatabaseManager {
 extension DatabaseManager {
     
     // MARK: User Exists
+    /// Checks if user exists for given email
+    /// Parameters
+    /// - `email`:            Target email to be checked
+    /// - `completion`:   Async closure to return with result
     public func userExtists(with email: String, completion: @escaping ((Bool) -> Void)) {
         let safeEmail = DatabaseManager.safeEmail(emailAddress: email)
         database.child(safeEmail).observeSingleEvent(of: .value, with: { snapshot in
@@ -103,6 +108,7 @@ extension DatabaseManager {
     }
     
     // MARK: Get All Users
+    /// Gets all users from database
     public func getAllUsers(completion: @escaping (Result<[[String:String]], Error>) -> Void) {
         database.child("users").observeSingleEvent(of: .value, with: { snapshot in
             guard let value = snapshot.value as? [[String:String]] else {

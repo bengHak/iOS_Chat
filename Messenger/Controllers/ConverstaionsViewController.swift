@@ -9,7 +9,8 @@ import UIKit
 import FirebaseAuth
 import JGProgressHUD
 
-class ConverstaionsViewController: UIViewController {
+/// Controller that shows list of conversations
+final class ConverstaionsViewController: UIViewController {
     
     private let spinner = JGProgressHUD(style: .dark)
     
