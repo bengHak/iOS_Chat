@@ -2,6 +2,8 @@
 
 Swift5와 파이어베이스를 활용한 실시간 채팅 어플리케이션
 
+> 참고자료: https://youtu.be/Mroju8T7Gdo?list=PL5PR3UyfTWvdlk-Qi-dPtJmjTj-2YIMMf
+
 ## 기능
 
 -   페이스북 로그인
